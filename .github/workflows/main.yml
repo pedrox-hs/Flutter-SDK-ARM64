@@ -25,6 +25,7 @@ jobs:
       - build-flutter-engine
       - build-dart-sdk
       - dart-version
+      - check-releases
     if: ${{ ! needs.check-releases.outputs.has-flutter-sdk-tag }}
     steps:
       - name: Maximize build space
@@ -100,6 +101,7 @@ jobs:
 
   build-flutter-engine:
     runs-on: ubuntu-latest
+    needs: check-releases
     if: ${{ ! needs.check-releases.outputs.has-flutter-engine-tag }}
     steps:
       - name: Maximize build space
