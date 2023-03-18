@@ -241,7 +241,7 @@ jobs:
       - uses: mukunku/tag-exists-action@v1.2.0
         id: check-dart-tag
         with:
-          tag: dart_sdk-${{ steps.dart-sdk-version.outputs.value }}
+          tag: dart_sdk-${{ needs.dart-version.outputs.value }}
 
       - uses: mukunku/tag-exists-action@v1.2.0
         id: check-flutter-engine-tag
