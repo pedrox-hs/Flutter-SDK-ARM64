@@ -233,7 +233,8 @@ jobs:
 
       - name: Zip SDK
         run: |
-          zip -q -r dart-sdk/sdk/out/dart-sdk-linux-arm64.zip ReleaseXARM64/dart-sdk
+          cd dart-sdk/sdk/out
+          zip -q -r dart-sdk-linux-arm64.zip ReleaseXARM64/dart-sdk
 
       - name: Release SDK
         uses: ncipollo/release-action@v1
