@@ -28,6 +28,8 @@ jobs:
       - dart-version
       - check-releases
     if: needs.check-releases.outputs.has-flutter-sdk-tag == 'false'
+    permissions:
+      contents: write
     steps:
       - name: Maximize build space
         uses: easimon/maximize-build-space@v4
@@ -105,6 +107,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: check-releases
     if: needs.check-releases.outputs.has-flutter-engine-tag == 'false'
+    permissions:
+      contents: write
     steps:
       - name: Maximize build space
         uses: easimon/maximize-build-space@v4
@@ -179,6 +183,8 @@ jobs:
       - dart-version
       - check-releases
     if: needs.check-releases.outputs.has-dart-tag == 'false'
+    permissions:
+      contents: write
     steps:
       - name: Maximize build space
         uses: easimon/maximize-build-space@v4
