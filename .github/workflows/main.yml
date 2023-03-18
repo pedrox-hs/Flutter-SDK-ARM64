@@ -1,16 +1,5 @@
-name: Main
+name: Generate Flutter SDK for ARM64
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
-  # push:
-  #   branches: [ main ]
-  # pull_request:
-  #   branches: [ main ]
-  # schedule:
-  #   - cron: 00 18 * * *
-  # watch:
-  #   types: [started]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
       version:
@@ -20,12 +9,16 @@ on:
 
 jobs:
   build-flutter-sdk:
+    name: Build Flutter SDK
     runs-on: ubuntu-latest
     needs:
       - build-flutter-engine
       - build-dart-sdk
       - dart-version
-    if: ${{ ! needs.check-releases.outputs.has-flutter-sdk-tag }}
+      - check-releases
+    if: ${{ always() && needs.check-releases.outputs.has-flutter-sdk-tag == 'false' }}
+    permissions:
+      contents: write
     steps:
       - name: Maximize build space
         uses: easimon/maximize-build-space@v4
@@ -36,22 +29,21 @@ jobs:
           remove-haskell: "true"
           remove-android: "true"
 
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Fetch Flutter Engine Github Release zip
-        uses: dsaltares/fetch-gh-release-asset@0.0.5
+      - name: Fetch Flutter Engine Github Release asset
+        uses: dsaltares/fetch-gh-release-asset@1.1.0
         with:
-          repo: "pedrox-hs/Flutter-SDK-ARM64"
-          version: flutter_engine-${{ github.event.inputs.version }}
-          file: "*.zip"
+          version: "tags/flutter_engine-${{ github.event.inputs.version }}"
+          file: ".*_arm64\\.zip"
+          target:  "./"
+          regex: true
 
-      - name: Fetch Dart SDK Github Release Asset
-        uses: dsaltares/fetch-gh-release-asset@0.0.5
+      - name: Fetch Dart SDK Github Release asset
+        uses: dsaltares/fetch-gh-release-asset@1.1.0
         with:
-          repo: "pedrox-hs/Flutter-SDK-ARM64"
-          version: dart_sdk-${{ steps.dart-sdk-version.outputs.value }}
-          file: "*.zip"
+          version: "tags/dart_sdk-${{ needs.dart-version.outputs.value }}"
+          file: ".*-arm64\\.zip"
+          target:  "./"
+          regex: true
 
       - name: Get & Init Flutter-SDK
         run: |
@@ -63,7 +55,6 @@ jobs:
           unzip dart-sdk-linux-arm64.zip
           unzip linux_release_arm64.zip
           unzip linux_debug_arm64.zip
-          ls -l
 
       - name: Assemble Flutter-SDK-ARM
         run: |
@@ -87,20 +78,24 @@ jobs:
 
       - name: Zip SDK
         run: |
-          zip -q -r Flutter-SDK-ARM64.zip flutter
+          cd flutter
+          zip -q -r ../Flutter-SDK-ARM64.zip *
 
       - name: Release SDK
         uses: ncipollo/release-action@v1
         with:
           artifacts: "Flutter-SDK-ARM64.zip"
-          tag: flutter_sdk-${{ steps.date.outputs.date }}
-          # token: ${{ secrets.GH_TOKEN }}
+          tag: flutter_sdk-${{ github.event.inputs.version }}
           artifactErrorsFailBuild: true
           allowUpdates: true
 
   build-flutter-engine:
+    name: Build Flutter Engine
     runs-on: ubuntu-latest
-    if: ${{ ! needs.check-releases.outputs.has-flutter-engine-tag }}
+    needs: check-releases
+    if: needs.check-releases.outputs.has-flutter-engine-tag == 'false'
+    permissions:
+      contents: write
     steps:
       - name: Maximize build space
         uses: easimon/maximize-build-space@v4
@@ -111,18 +106,12 @@ jobs:
           remove-haskell: "true"
           remove-android: "true"
 
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Set up Python 2.x
-        uses: actions/setup-python@v2
-        with:
-          python-version: "2.x"
-
       - name: Prepare Env
         run: |
           sudo apt-get update
-          sudo apt-get install g++-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-multilib gcc-multilib zip
+          sudo apt-get install g++-aarch64-linux-gnu g++-arm-linux-gnueabihf
+          sudo apt-get install g++-multilib gcc-multilib
+          sudo apt-get install zip
 
       - name: Get Resource
         run: |
@@ -162,7 +151,6 @@ jobs:
         with:
           artifacts: "flutter-engine/src/out/*.zip"
           tag: flutter_engine-${{ github.event.inputs.version }}
-          # token: ${{ secrets.RELEASE_TOKEN }}
           artifactErrorsFailBuild: true
           skipIfReleaseExists: true
 
@@ -172,7 +160,9 @@ jobs:
     needs:
       - dart-version
       - check-releases
-    if: ${{ ! needs.check-releases.outputs.has-dart-tag }}
+    if: needs.check-releases.outputs.has-dart-tag == 'false'
+    permissions:
+      contents: write
     steps:
       - name: Maximize build space
         uses: easimon/maximize-build-space@v4
@@ -183,18 +173,12 @@ jobs:
           remove-haskell: "true"
           remove-android: "true"
 
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Set up Python 2.x
-        uses: actions/setup-python@v2
-        with:
-          python-version: "2.x"
-
       - name: Prepare
         run: |
           sudo apt-get update
-          sudo apt-get install g++-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-multilib zip
+          sudo apt-get install g++-aarch64-linux-gnu g++-arm-linux-gnueabihf
+          sudo apt-get install g++-multilib
+          sudo apt-get install zip
 
       - name: Get Resource
         run: |
@@ -214,34 +198,34 @@ jobs:
         run: |
           export PATH="$PATH:$PWD/depot_tools"
           cd dart-sdk/sdk
-          ls tools/bots
           ./tools/build.py --no-goma -m release --arch=arm64 create_sdk
 
       - name: Zip SDK
         run: |
-          zip -q -r dart-sdk/sdk/out/dart-sdk-linux-arm64.zip ReleaseXARM64/dart-sdk
+          cd dart-sdk/sdk/out
+          zip -q -r dart-sdk-linux-arm64.zip ReleaseXARM64/dart-sdk
 
       - name: Release SDK
         uses: ncipollo/release-action@v1
         with:
           artifacts: "dart-sdk/sdk/out/*.zip"
-          tag: dart_sdk-${{ steps.dart-sdk-version.outputs.value }}
-          # token: ${{ secrets.RELEASE_TOKEN }}
+          tag: dart_sdk-${{ needs.dart-version.outputs.value }}
           artifactErrorsFailBuild: true
           skipIfReleaseExists: true
 
   check-releases:
+    name: Check if release versions exists
     runs-on: ubuntu-latest
     needs: dart-version
     outputs:
       has-dart-tag: ${{ steps.check-dart-tag.outputs.exists }}
-      has-flutter-tag: ${{ steps.check-flutter-sdk-tag.outputs.exists }}
+      has-flutter-sdk-tag: ${{ steps.check-flutter-sdk-tag.outputs.exists }}
       has-flutter-engine-tag: ${{ steps.check-flutter-engine-tag.outputs.exists }}
     steps:
       - uses: mukunku/tag-exists-action@v1.2.0
         id: check-dart-tag
         with:
-          tag: dart_sdk-${{ steps.dart-sdk-version.outputs.value }}
+          tag: dart_sdk-${{ needs.dart-version.outputs.value }}
 
       - uses: mukunku/tag-exists-action@v1.2.0
         id: check-flutter-engine-tag
@@ -249,7 +233,7 @@ jobs:
           tag: flutter_engine-${{ github.event.inputs.version }}
 
       - uses: mukunku/tag-exists-action@v1.2.0
-        id: check-flutter-tag
+        id: check-flutter-sdk-tag
         with:
           tag: flutter_sdk-${{ github.event.inputs.version }}
 
@@ -267,5 +251,6 @@ jobs:
         run: |
           dart_version=$(./bin/flutter-dart-version.sh)
           echo "value=$dart_version" >> $GITHUB_OUTPUT
+          echo $dart_version
         env:
           FLUTTER_VERSION: ${{ github.event.inputs.version }}
