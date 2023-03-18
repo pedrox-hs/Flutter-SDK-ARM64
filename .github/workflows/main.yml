@@ -20,6 +20,7 @@ on:
 
 jobs:
   build-flutter-sdk:
+    name: Build Flutter SDK
     runs-on: ubuntu-latest
     needs:
       - build-flutter-engine
@@ -100,6 +101,7 @@ jobs:
           allowUpdates: true
 
   build-flutter-engine:
+    name: Build Flutter Engine
     runs-on: ubuntu-latest
     needs: check-releases
     if: needs.check-releases.outputs.has-flutter-engine-tag == 'false'
@@ -124,7 +126,9 @@ jobs:
       - name: Prepare Env
         run: |
           sudo apt-get update
-          sudo apt-get install g++-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-multilib gcc-multilib zip
+          sudo apt-get install g++-aarch64-linux-gnu g++-arm-linux-gnueabihf
+          sudo apt-get install g++-multilib gcc-multilib
+          sudo apt-get install zip
 
       - name: Get Resource
         run: |
@@ -196,7 +200,9 @@ jobs:
       - name: Prepare
         run: |
           sudo apt-get update
-          sudo apt-get install g++-aarch64-linux-gnu g++-arm-linux-gnueabihf g++-multilib zip
+          sudo apt-get install g++-aarch64-linux-gnu g++-arm-linux-gnueabihf
+          sudo apt-get install g++-multilib
+          sudo apt-get install zip
 
       - name: Get Resource
         run: |
@@ -233,6 +239,7 @@ jobs:
           skipIfReleaseExists: true
 
   check-releases:
+    name: Check if release versions exists
     runs-on: ubuntu-latest
     needs: dart-version
     outputs:
