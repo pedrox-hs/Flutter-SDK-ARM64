@@ -97,7 +97,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: "Flutter-SDK-ARM64.zip"
-          tag: flutter_sdk-${{ steps.date.outputs.date }}
+          tag: flutter_sdk-${{ github.event.inputs.version }}
           # token: ${{ secrets.GH_TOKEN }}
           artifactErrorsFailBuild: true
           allowUpdates: true
