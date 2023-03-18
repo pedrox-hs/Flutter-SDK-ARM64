@@ -240,7 +240,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: "dart-sdk/sdk/out/*.zip"
-          tag: dart_sdk-${{ steps.dart-sdk-version.outputs.value }}
+          tag: dart_sdk-${{ needs.dart-version.outputs.value }}
           # token: ${{ secrets.RELEASE_TOKEN }}
           artifactErrorsFailBuild: true
           skipIfReleaseExists: true
