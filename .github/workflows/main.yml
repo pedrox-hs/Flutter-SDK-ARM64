@@ -54,7 +54,7 @@ jobs:
         uses: dsaltares/fetch-gh-release-asset@0.0.5
         with:
           repo: "pedrox-hs/Flutter-SDK-ARM64"
-          version: dart_sdk-${{ steps.dart-sdk-version.outputs.value }}
+          version: dart_sdk-${{ needs.dart-version.outputs.value }}
           file: "*.zip"
 
       - name: Get & Init Flutter-SDK
