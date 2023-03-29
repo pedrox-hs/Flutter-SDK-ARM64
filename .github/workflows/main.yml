@@ -78,8 +78,7 @@ jobs:
 
       - name: Zip SDK
         run: |
-          cd flutter
-          zip -q -r ../Flutter-SDK-ARM64.zip *
+          zip -q -r Flutter-SDK-ARM64.zip flutter
 
       - name: Release SDK
         uses: ncipollo/release-action@v1
