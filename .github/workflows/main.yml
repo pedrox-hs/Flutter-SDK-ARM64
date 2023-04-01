@@ -140,7 +140,7 @@ jobs:
           export PATH="$PATH:$PWD/depot_tools"
           cd flutter-engine/src
 
-          all_engines=("linux-x64-debug" "linux-arm64-debug" "linux-arm64-release")
+          all_engines=("linux-arm64-debug" "linux-arm64-release")
 
           for engine in "${all_engines[@]}"; do
             engine_args=(${engine//-/ })
