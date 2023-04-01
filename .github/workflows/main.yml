@@ -67,11 +67,13 @@ jobs:
           
           ls | grep '.zip' | xargs -n 1 -I {} unzip "{}" -d "$flutter_engine_dir/"
 
-          mkdir -p $flutter_sdk_dir/bin/cache/artifacts/engine/common/flutter_patched_sdk/
+          mkdir -p $flutter_engine_dir/common/flutter_patched_sdk/
           rsync -avP $flutter_engine_dir_debug/flutter_patched_sdk $flutter_sdk_dir/bin/cache/artifacts/engine/common/flutter_patched_sdk/
 
-          mkdir -p $flutter_sdk_dir/bin/cache/artifacts/engine/common/flutter_patched_sdk_product/
+          mkdir -p $flutter_engine_dir/common/flutter_patched_sdk_product/
           rsync -avP $flutter_engine_dir_release/flutter_patched_sdk $flutter_sdk_dir/bin/cache/artifacts/engine/common/flutter_patched_sdk_product/
+          
+          cp -R "$flutter_engine_dir/linux-x64/shader_lib" "$flutter_engine_dir/linux-arm64"
 
       - name: Zip SDK
         run: |
@@ -142,7 +144,7 @@ jobs:
             runtime_mode=${engine_args[2]}
 
             ./flutter/tools/gn --target-os $target_os --linux-cpu $linux_cpu --no-goma --runtime-mode $runtime_mode
-            ninja -C out/${engine/linux-x64-debug/linux-x64}
+            ninja -C out/$(echo $engine | sed -E 's/linux-(.*)-debug/linux-\1/g')
           done
 
       - name: Zip Engine
