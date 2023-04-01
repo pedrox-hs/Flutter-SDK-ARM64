@@ -77,7 +77,7 @@ jobs:
 
           for engine in "${all_engines[@]}"; do
             mkdir -p $flutter_engine_dir/$engine/linux-arm64
-            cp ReleaseXARM64/dart-sdk/bin/utils/gen_snapshot $flutter_engine_dir/$engine/linux-arm64/
+            cp $dart_sdk_dir/dart-sdk/bin/utils/gen_snapshot $flutter_engine_dir/$engine/linux-arm64/
           done
 
 
@@ -124,14 +124,14 @@ jobs:
           mkdir flutter-engine
           cd flutter-engine
           echo 'solutions = [
-          {
-           "managed": False,
-           "name": "src/flutter",
-           "url": "https://github.com/flutter/engine",
-           "custom_deps": {},
-           "deps_file": "DEPS",
-           "safesync_url": "",
-          },
+            {
+            "managed": False,
+            "name": "src/flutter",
+            "url": "https://github.com/flutter/engine",
+            "custom_deps": {},
+            "deps_file": "DEPS",
+            "safesync_url": "",
+            },
           ]' >> .gclient
           gclient sync
 
