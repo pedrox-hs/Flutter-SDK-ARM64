@@ -1,6 +1,7 @@
 #!/bin/bash
 
-set -e
+set -xeu
+set -o pipefail
 
 FLUTTER_VERSION=${1:-$FLUTTER_VERSION}
 
